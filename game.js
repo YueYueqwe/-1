@@ -389,6 +389,54 @@
   const isRight = () => down("KeyD") || down("ArrowRight");
   const isGuard = () => down("KeyL") || down("ShiftLeft") || down("ShiftRight");
 
+  const padState = { connected: false, prev: [], move: 0, guard: false };
+
+  function pollGamepad() {
+    if (!navigator.getGamepads) return;
+    const pads = navigator.getGamepads();
+    let pad = null;
+    for (let i = 0; i < pads.length; i++) {
+      if (pads[i] && pads[i].connected) {
+        pad = pads[i];
+        break;
+      }
+    }
+    padState.connected = !!pad;
+    if (!pad) {
+      padState.move = 0;
+      padState.guard = false;
+      padState.prev = [];
+      return;
+    }
+
+    const btn = (i) => !!(pad.buttons[i] && pad.buttons[i].pressed);
+    const edge = (i) => btn(i) && !padState.prev[i];
+    const ax = pad.axes[0] || 0;
+    let move = 0;
+    if (ax < -0.3) move = -1;
+    else if (ax > 0.3) move = 1;
+    if (btn(14)) move = -1;
+    if (btn(15)) move = 1;
+    padState.move = move;
+    padState.guard = btn(1) || btn(5) || (!!pad.buttons[7] && pad.buttons[7].value > 0.35);
+
+    const confirm = edge(0) || edge(9);
+    if ((game.mode === "menu" || game.mode === "result") && confirm) {
+      startGame();
+    } else if (edge(9) && (game.mode === "playing" || game.mode === "paused")) {
+      togglePause();
+    }
+
+    if (game.mode === "playing") {
+      if (edge(0) || edge(12)) pressed.add("PadJump");
+      if (edge(2)) pressed.add("PadShoot");
+      if (edge(3)) pressed.add("PadMelee");
+    }
+
+    padState.prev = [];
+    for (let i = 0; i < pad.buttons.length; i++) padState.prev[i] = pad.buttons[i].pressed;
+  }
+
   window.addEventListener("keydown", (event) => {
     initAudio();
     if (CONTROL_CODES.has(event.code)) event.preventDefault();
@@ -440,12 +488,13 @@
   }
 
   function readInput() {
+    const kbMove = (isRight() ? 1 : 0) - (isLeft() ? 1 : 0);
     return {
-      move: (isRight() ? 1 : 0) - (isLeft() ? 1 : 0),
-      jump: pressed.has("Space") || pressed.has("KeyW") || pressed.has("ArrowUp"),
-      shoot: pressed.has("KeyJ"),
-      melee: pressed.has("KeyK"),
-      guard: isGuard(),
+      move: kbMove !== 0 ? kbMove : padState.move,
+      jump: pressed.has("Space") || pressed.has("KeyW") || pressed.has("ArrowUp") || pressed.has("PadJump"),
+      shoot: pressed.has("KeyJ") || pressed.has("PadShoot"),
+      melee: pressed.has("KeyK") || pressed.has("PadMelee"),
+      guard: isGuard() || padState.guard,
     };
   }
 
@@ -1889,6 +1938,7 @@
     const dt = Math.min(0.05, Math.max(0, (now - lastFrame) / 1000));
     lastFrame = now;
     if (game.mode !== "paused") game.time += dt;
+    pollGamepad();
 
     if (game.mode === "playing") {
       updateBattle(dt);
@@ -1908,6 +1958,16 @@
     if (game.mode !== "paused") updateAmbient(dt, game.time);
     render();
     requestAnimationFrame(frame);
+  }
+
+  if (window.__SR_NATIVE) {
+    window.addEventListener("pagehide", () => {
+      try {
+        navigator.sendBeacon("/__bye");
+      } catch (err) {
+        /* ignore */
+      }
+    });
   }
 
   resetFighters();

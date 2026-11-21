@@ -843,6 +843,24 @@ button {
   font-weight: 500;
 }
 
+.pad-guide {
+  margin-top: 9px;
+  color: #6d8790;
+  font-family: var(--font-mono);
+  font-size: clamp(7px, 0.6cqw, 9px);
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+.pad-guide b {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 4px;
+  color: var(--amber);
+  border: 1px solid rgba(255, 180, 95, 0.3);
+  font-weight: 500;
+}
+
 .keys {
   display: inline-flex;
   gap: 3px;
