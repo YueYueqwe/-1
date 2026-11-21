@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#070b14" />
+  <title>STEEL//RIVALS — 像素机甲对决</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23070b14'/%3E%3Crect x='3' y='5' width='10' height='6' fill='%2355f6ff'/%3E%3Crect x='5' y='2' width='6' height='4' fill='%23ff5d4a'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <div class="page-noise" aria-hidden="true"></div>
+  <main class="arcade">
+    <header class="masthead">
+      <div class="brand">
+        <span class="brand-chip" aria-hidden="true"><i></i><i></i><i></i></span>
+        <div class="brand-copy">
+          <h1>STEEL<span>//</span>RIVALS</h1>
+          <p>PIXEL MECHA COMBAT · SECTOR 07</p>
+        </div>
+      </div>
+      <div class="masthead-right">
+        <span class="online"><i></i>SYS ONLINE</span>
+        <span class="mode-tag">1P VS CPU</span>
+        <button class="sound-btn" id="muteBtn" type="button" aria-pressed="false" title="切换音效 (M)">
+          <span class="sound-led"></span><span id="muteLabel">SFX ON</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="stage" id="stage" data-mode="menu" aria-label="像素机甲对战游戏区域">
+      <canvas id="game" width="480" height="270" aria-label="机甲对战画面：玩家苍隼在左侧，赤鬼在右侧"></canvas>
+
+      <div class="scanlines" aria-hidden="true"></div>
+      <div class="vignette" aria-hidden="true"></div>
+      <div class="stage-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+      <div class="hud" id="hud">
+        <div class="fighter-panel p1">
+          <div class="fighter-meta">
+            <span class="side">P1</span>
+            <span class="fighter-name">苍隼 <em>AZURE-01</em></span>
+            <span class="hp-num" id="hp1Num">100</span>
+          </div>
+          <div class="bar hp-bar" id="hp1Bar" role="progressbar" aria-label="苍隼生命值" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+            <div class="bar-ghost" id="hp1Ghost"></div>
+            <div class="bar-fill" id="hp1Fill"></div>
+            <div class="bar-ticks"></div>
+          </div>
+          <div class="bar shield-bar" id="shield1Bar" role="progressbar" aria-label="苍隼护盾能量" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+            <div class="bar-fill" id="shield1Fill"></div>
+            <span class="shield-tag">SHD</span>
+          </div>
+        </div>
+
+        <div class="round-panel">
+          <span class="round-label">ROUND 01</span>
+          <div class="timer" id="timer">75</div>
+          <span class="timer-label">TIME</span>
+        </div>
+
+        <div class="fighter-panel p2">
+          <div class="fighter-meta">
+            <span class="side">CPU</span>
+            <span class="fighter-name"><em>CRIMSON-07</em> 赤鬼</span>
+            <span class="hp-num" id="hp2Num">100</span>
+          </div>
+          <div class="bar hp-bar" id="hp2Bar" role="progressbar" aria-label="赤鬼生命值" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+            <div class="bar-ghost" id="hp2Ghost"></div>
+            <div class="bar-fill" id="hp2Fill"></div>
+            <div class="bar-ticks"></div>
+          </div>
+          <div class="bar shield-bar" id="shield2Bar" role="progressbar" aria-label="赤鬼护盾能量" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+            <div class="bar-fill" id="shield2Fill"></div>
+            <span class="shield-tag">SHD</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="announce" id="announce" aria-live="polite"></div>
+
+      <div class="overlay start-overlay is-visible" id="startScreen">
+        <div class="start-panel">
+          <div class="eyebrow"><span class="blink-dot"></span>ARCADE PROTOCOL 07 // 1 VS 1</div>
+          <h2 class="game-title">STEEL<span>//</span>RIVALS</h2>
+          <div class="cn-title"><span></span>像素机甲对决<span></span></div>
+          <p class="lede">驾驶「苍隼」，在废弃空港击溃重装机甲「赤鬼」。<br />看准弹道、管理护盾，用一次完美的格挡扭转战局。</p>
+          <div class="start-actions">
+            <button class="primary-btn" id="startBtn" type="button">
+              <span class="btn-label">开始作战</span>
+              <span class="btn-key">ENTER</span>
+            </button>
+            <div class="version-tag">BUILD 1.0<br />CPU // NORMAL</div>
+          </div>
+          <div class="key-guide" aria-label="键盘操作说明">
+            <div><span class="keys"><kbd>A</kbd><kbd>D</kbd></span><b>移动</b></div>
+            <div><span class="keys"><kbd>SPACE</kbd></span><b>跳跃</b></div>
+            <div><span class="keys"><kbd>J</kbd></span><b>脉冲炮</b></div>
+            <div><span class="keys"><kbd>K</kbd></span><b>等离子斩</b></div>
+            <div><span class="keys"><kbd>L</kbd></span><b>格挡</b></div>
+          </div>
+        </div>
+        <div class="start-side" aria-hidden="true">
+          <span>NEON<br />HARBOR</span>
+          <i></i>
+          <b>19:47<br />SECTOR 07</b>
+        </div>
+      </div>
+
+      <div class="overlay pause-overlay" id="pauseScreen" aria-hidden="true">
+        <div class="modal-card">
+          <div class="eyebrow">TACTICAL HOLD</div>
+          <h2 class="modal-title">PAUSED</h2>
+          <p class="modal-sub">战术暂停 · 战场数据已冻结</p>
+          <div class="modal-actions">
+            <button class="primary-btn compact" id="resumeBtn" type="button"><span class="btn-label">继续作战</span><span class="btn-key">P</span></button>
+            <button class="ghost-btn" id="pauseRestartBtn" type="button">重新开始</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="overlay result-overlay" id="resultScreen" aria-hidden="true">
+        <div class="result-card">
+          <div class="eyebrow" id="resultReason">K.O.</div>
+          <h2 class="modal-title result-title" id="resultTitle">VICTORY</h2>
+          <p class="modal-sub" id="resultSub">赤鬼 信号中断</p>
+          <div class="score-line">
+            <span>苍隼</span>
+            <strong id="finalScore">100 : 0</strong>
+            <span>赤鬼</span>
+          </div>
+          <div class="result-stats">
+            <div><span>造成伤害</span><b id="statDamage">0</b></div>
+            <div><span>有效命中</span><b id="statHits">0</b></div>
+            <div><span>成功格挡</span><b id="statBlocks">0</b></div>
+          </div>
+          <div class="modal-actions">
+            <button class="primary-btn compact" id="restartBtn" type="button"><span class="btn-label">再战一次</span><span class="btn-key">ENTER</span></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="touch-controls" id="touchControls" aria-label="触屏操作">
+        <div class="touch-cluster move-cluster">
+          <button type="button" class="touch-btn" data-key="KeyA" aria-label="向左移动">◀</button>
+          <button type="button" class="touch-btn" data-key="KeyD" aria-label="向右移动">▶</button>
+        </div>
+        <div class="touch-cluster action-cluster">
+          <button type="button" class="touch-btn small" data-key="Space" aria-label="跳跃">跳</button>
+          <button type="button" class="touch-btn" data-key="KeyJ" aria-label="脉冲炮">炮</button>
+          <button type="button" class="touch-btn" data-key="KeyK" aria-label="等离子斩">斩</button>
+          <button type="button" class="touch-btn guard" data-key="KeyL" aria-label="格挡">盾</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="underbar">
+      <div class="control-legend">
+        <span><kbd>A</kbd><kbd>D</kbd> 移动</span>
+        <span><kbd>SPACE</kbd> 跳跃</span>
+        <span><kbd>J</kbd> 脉冲炮</span>
+        <span><kbd>K</kbd> 等离子斩</span>
+        <span><kbd>L</kbd> 格挡</span>
+        <span><kbd>P</kbd> 暂停</span>
+        <span><kbd>M</kbd> 静音</span>
+      </div>
+      <p class="fineprint">格挡消耗护盾能量 · 破盾将陷入硬直 · 跳跃可躲避平射弹道</p>
+      <p class="credit">PROCEDURAL PIXEL ART / WEB AUDIO / NO EXTERNAL ASSETS</p>
+    </footer>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
